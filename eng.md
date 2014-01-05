@@ -1,4 +1,6 @@
-<section class="byline"></section>
+# The Hobbit Experience
+*Bringing Middle-Earth to Life with Mobile WebGL*
+
 Historically, bringing interactive, web-based, multimedia-heavy experiences to
 mobiles and tablets has been a challenge. The main constraints have been 
 performance, API availability, limitations in HTML5 audio on devices and the 
@@ -19,7 +21,7 @@ characters from the Hobbit movies. Using WebGL made it possible for us to
 dramatize and explore the rich world of the Hobbit trilogy and let the users 
 control the experience.
 
-## Challenges of WebGL on mobile devices {#toc-challenges}
+## Challenges of WebGL on mobile devices
 
 First, the term "mobile devices" is very broad. The specs for devices vary a
 lot. So as a developer you need to decide if you want to support more devices 
@@ -27,45 +29,42 @@ with a less complex experience or, as we did in this case, limit the supported
 devices to those able to display a more realistic 3D world. For “Journey through
 Middle-earth” we focused on Nexus devices and five popular Android smartphones.
 
-In the experiment, we used [three.js][1] as we’ve done for some of our
+In the experiment, we used [three.js][1] as we've done for some of our
 previous WebGL projects. We started implementation by building an initial 
 version of the[Trollshaw game][2] that would run well on the Nexus 10 tablet.
 After some initial testing on the device, we had a list of optimizations in mind
 that looked much like what we normally would use for a low-spec laptop:
 
 *   Use low-poly models
-
 *   Use low-res textures
-
 *   Reduce the number of drawcalls as much as possible by [merging geometry][3]
-
 *   Simplify materials and lighting
-
 *   Remove post effects and turn off antialiasing
-
 *   Optimise Javascript performance
-
 *   Render the WebGL canvas at half size and scale up with CSS
 
 After applying these optimizations to our first rough version of the game, we
 had a steady frame rate of 30FPS that we were happy with. At that point our goal
 was to improve the visuals without negatively impacting frame rate. We tried 
 many tricks: some turned out to really have an impact on performance; a few didn
-’t have as big an effect as we’d hoped.
+'t have as big an effect as we'd hoped.
 
-### Use low-poly models {#toc-low-poly}
+### Use low-poly models
 
-Let’s start with the models. Using low-poly models certainly helps download
+Let's start with the models. Using low-poly models certainly helps download
 time, as well as the time it takes to initialize the scene. We found that we 
 could increase the complexity quite a lot without affecting performance much. 
 The troll models we use in this game are about 5K faces and the scene is around 
-40K faces and that works fine.<figure>
+40K faces and that works fine.
 
-![][4]<figcaption>One of the trolls of Trollshaw forest</figcaption></figure>
+![][4]
+
+*One of the trolls of Trollshaw forest*
+
 For another (not yet released) location in the experience we saw more impact on
 performance from reducing polygons. In that case we loaded lower-polygon objects
 for mobile devices than the objects we loaded for desktop. Creating different 
-sets of 3D models requires some extra work and isn’t always required. It really 
+sets of 3D models requires some extra work and isn't always required. It really 
 depends on how complex your models are to begin with.
 
 When working on big scenes with a lot of objects, we tried to be strategic on
@@ -74,37 +73,41 @@ and off quickly, to find a setting that worked for all mobile devices. Then, we
 could choose to merge the geometry in JavaScript at runtime for dynamic 
 optimization or to merge it in pre-production to save requests.
 
-### Use low-res textures {#toc-low-res}
+### Use low-res textures
 
 To reduce load time on mobile devices, we chose to load different textures that
 were half the size of the textures on desktop. It turns out that all devices can
 [handle texture sizes][5] up to 2048x2048px and most can handle 4096x4096px.
-Texture lookup on the individual textures doesn’t seem to be a problem once they
+Texture lookup on the individual textures doesn't seem to be a problem once they
 are uploaded to GPU. The total size of the textures must fit in the GPU memory 
 to avoid having textures constantly up- and downloaded, but this is probably not
 a big problem for most web-experiences. However, combining textures into as few 
 spritesheets as possible is important to reduce the number of drawcalls — this 
-is something that has a big impact on performance on mobile devices.<figure>
+is something that has a big impact on performance on mobile devices.
 
-![][6]<figcaption>Texture for one of the trolls of Trollshaw forest  
-(original size 512x512px)</figcaption></figure>
-### Simplify materials and lighting {#toc-simplify}
+![][6]
+
+*Texture for one of the trolls of Trollshaw forest (original size 512x512px)*
+
+### Simplify materials and lighting
 
 The choice of materials can also greatly affect performance and must be managed
-wisely on mobile. Using`MeshLambertMaterial` (per vertex light calculation) in
-three.js instead of`MeshPhongMaterial` (per texel light calculation) is one
+wisely on mobile. Using `MeshLambertMaterial` (per vertex light calculation) in
+three.js instead of `MeshPhongMaterial` (per texel light calculation) is one
 thing we used to optimise performance. Basically we tried to use as simple 
 shaders with as few lighting calculations as possible.
 
-To see how the materials you use affect a scene’s performance, you can
-override the materials of the scene with a`MeshBasicMaterial`. This will give
+To see how the materials you use affect a scene's performance, you can
+override the materials of the scene with a `MeshBasicMaterial`. This will give
 you a good comparison.
 
-    scene.overrideMaterial = new THREE.MeshBasicMaterial({color:0x333333, wireframe:true});
+    scene.overrideMaterial = new THREE.MeshBasicMaterial(
+      {color:0x333333, wireframe:true}
+    );
 
-### Optimise JavaScript performance {#toc-javascript}
+### Optimise JavaScript performance
 
-When building games for mobile, the GPU isn’t always the biggest hurdle. A
+When building games for mobile, the GPU isn't always the biggest hurdle. A
 lot of time is spent on the CPU, especially physics and skeletal animations. One
 trick that helps sometimes, depending on the simulation, is to only run these 
 expensive calculations every other frame. You can also use available JavaScript 
@@ -133,7 +136,7 @@ garbage collected:
       currentPos.set(originPos.x+offsetX,originPos.y,originPos.z);
     }
 
-As much as possible, event handlers should only update properties, and let the
+As much as possible, event handlers should only update properties, and let the 
 `requestAnimationFrame` render-loop handle updating the stage.
 
 Another tip is to optimise and/or pre-calculate ray-casting operations. For
@@ -144,7 +147,7 @@ instead of ray-casting against the mesh. Or as we do in the
 simpler low-poly invisible mesh. Searching for collisions on a high-poly mesh is
 very slow and should be avoided in a game-loop in general.
 
-### Render the WebGL canvas at half size and scale up with CSS {#toc-render}
+### Render the WebGL canvas at half size and scale up with CSS
 
 The size of the WebGL canvas is probably the single most effective parameter
 you can tweak to optimise performance. The bigger the canvas you use to draw 
@@ -154,45 +157,55 @@ has to push 4 times the number of pixels as a low-density tablet. To optimise
 this for mobile we use a[trick][9] where we set the canvas to half the size (50
 %) and then scale it up to its intended size (100%) with hardware-accelerated 
 CSS 3D transforms. The downside of this is a pixelated image where thin lines 
-can become a problem but on a high-res screen the effect isn’t that bad. It’s 
-absolutely worth the extra performance.<figure>
+can become a problem but on a high-res screen the effect isn't that bad. It's 
+absolutely worth the extra performance.
 
-![][10]<figcaption>The same scene without canvas scaling on the Nexus 10 (16FPS
-) and scaled to 50% (33FPS
-).</figcaption></figure>
-### Objects as building blocks {#toc-objects}
+![][10]
+
+*The same scene without canvas scaling on the Nexus 10 (16FPS)
+and scaled to 50% (33FPS).*
+
+### Objects as building blocks
 
 To be able to create the big maze of the [Dol Guldur][11] castle and the never
 ending valley of Rivendell we made a set of building block 3D models that we re-
 use. Re-using objects lets us ensure that objects are instantiated and uploaded 
-at the start of the experience, and not in the middle of it.<figure>
+at the start of the experience, and not in the middle of it.
 
-![][12]<figcaption>3D object building blocks used in the maze of Dol Guldur.</
-figcaption
-></figure>
+![][12]
+
+*3D object building blocks used in the maze of Dol Guldur.*
+
 In Rivendell we have a number of ground sections that we constantly reposition
-in Z-depth as the user’s journey progresses. As the user passes sections, these 
+in Z-depth as the user's journey progresses. As the user passes sections, these 
 are repositioned in the far distance.
 
 For the Dol Guldur castle we wanted the maze to be regenerated for every game.
-To do this we created a script that regenerates the maze.<figure><figcaption>
-Click to regenerate the maze</figcaption></figure>
+To do this we created a script that regenerates the maze.
+
+<iframe src="examples/maze.html" frameborder="0" width="440" height="420">
+</iframe>
+*Click to regenerate the maze*
 
 Merging the whole structure into one big mesh from the beginning results in a
 very big scene and poor performance. To address this, we decided to hide and 
 show the building blocks depending on whether they are in view. Right from the 
 start, we had an idea about using a 2D raycaster script but in the end we used 
 the[built-in three.js frustrum culling][13]. We reused the raycaster script to
-zoom in on the "danger" the player is facing.<figure><figcaption>Raycaster
-script used in the maze of Dol Guldur.</figcaption></figure>
+zoom in on the "danger" the player is facing.
+
+<iframe src="examples/raycast.html"
+  frameborder="0" width="320" height="320">
+</iframe>
+*Raycaster script used in the maze of Dol Guldur.*
 
 The next big thing to handle is user interaction. On desktop you have mouse and
 keyboard input; on mobile devices your users interact with touch, swipe, pinch, 
 device orientation etc.
 
-## Using touch interaction in mobile web experiences {#toc-touch}
+## Using touch interaction in mobile web experiences
 
-Adding touch support isn’t difficult. There are [great articles ][14]to read
+Adding touch support isn't difficult. There are [great articles ][14]to read
 about the topic. But there are some small things that can make it more 
 complicated.
 
@@ -201,31 +214,32 @@ enabled laptops have both mouse and touch support. One common mistake is to
 check if the device is touch enabled and then only add touch event listeners and
 none for mouse.
 
-Don’t update rendering in event listeners. Save the touch events to variables
+Don't update rendering in event listeners. Save the touch events to variables
 instead and react to them in the requestAnimationFrame render loop. This 
 improves performance and also coalesce conflicting events. Make sure that you re
 -use objects instead of creating new objects in the event listeners.
 
-Remember that it’s multitouch: event.touches is an array of all touches. In
-some cases it’s more interesting to look at event.targetTouches or event.
+Remember that it's multitouch: event.touches is an array of all touches. In
+some cases it's more interesting to look at event.targetTouches or event.
 changedTouches instead and just react to the touches you are interested in. To 
 separate taps from swipes we use a delay before we check if the touch has moved
-(swipe) or if it’s still (tap). To get a pinch we measure the distance between 
-the two initial touches and how that changes over time.<figure><figcaption>
-Example of swipe detection for Trollshaw game. Try swiping across the canvas.</
-figcaption
-></figure>
+(swipe) or if it's still (tap). To get a pinch we measure the distance between 
+the two initial touches and how that changes over time.
+
+<iframe src="/examples/swipe.html" frameborder="0" width="420" height="320">
+</iframe>
+*Example of swipe detection for Trollshaw game. Try swiping across the canvas.*
 
 In a 3D world you have to decide how your camera reacts to mouse vs. swipe
 actions. One common way of adding camera movement is to follow the mouse 
 movement. This can be done with either direct control using mouse position or 
-with a delta movement (position change). You don’t always want the same 
+with a delta movement (position change). You don't always want the same 
 behaviour on a mobile device as a desktop browser. We tested extensively to 
 decide what felt right for each version.
 
-When dealing with smaller screens and touchscreens you’ll find that the user
-’s fingers and UI interaction graphics are often in the way of what you want to 
-show. This is something we are used to when designing native apps but haven’t 
+When dealing with smaller screens and touchscreens you'll find that the user
+'s fingers and UI interaction graphics are often in the way of what you want to 
+show. This is something we are used to when designing native apps but haven't 
 really had to think about before with web experiences. This is a real challenge 
 for designers and UX designers.
 
@@ -234,33 +248,33 @@ well, especially on newer, high-end devices. When it comes to performance it
 seems like polygon count and texture size mostly affect download and 
 initialization times and that materials, shaders and the size of the WebGL 
 canvas are the most important parts to optimise for mobile performance. However,
-it’s the sum of the parts that affects the performance so everything you can do 
+it's the sum of the parts that affects the performance so everything you can do 
 to optimise counts.
 
 Targeting mobile devices also means that you have to get used to thinking about
-touch interactions and that it’s not only about the pixel size — it’s the 
+touch interactions and that it's not only about the pixel size — it's the 
 physical size of the screen as well. In some cases we had to move the 3D camera 
 closer to actually see what was going on.
 
-The experiment is launched and it’s been a fantastic journey. Hope you enjoy
+The experiment is launched and it's been a fantastic journey. Hope you enjoy
 it!
 
 Want to try it out? Take your own [Journey to Middle-Earth][15].
 
- [1]: http://threejs.org/
- [2]: http://middle-earth.thehobbit.com/trollshaw/experience
+[1]: http://threejs.org/
+[2]: http://middle-earth.thehobbit.com/trollshaw/experience
 
- [3]: http://www.google.com/url?q=http%3A%2F%2Flearningthreejs.com%2Fblog%2F2011%2F10%2F05%2Fperformance-merging-geometry%2F&sa=D&sntz=1&usg=AFQjCNEekldEIRJOLOTgexpMUFPq6Obtvg
- [4]: img/troll.jpg
- [5]: http://webglstats.com/#h_texsize
- [6]: img/trolltexture.jpg
- [7]: http://www.html5rocks.com/en/tutorials/speed/static-mem-pools/
- [8]: http://middle-earth.thehobbit.com/rivendell/experience
+[3]: http://www.google.com/url?q=http%3A%2F%2Flearningthreejs.com%2Fblog%2F2011%2F10%2F05%2Fperformance-merging-geometry%2F&sa=D&sntz=1&usg=AFQjCNEekldEIRJOLOTgexpMUFPq6Obtvg
+[4]: img/troll.jpg
+[5]: http://webglstats.com/#h_texsize
+[6]: img/trolltexture.jpg
+[7]: http://www.html5rocks.com/en/tutorials/speed/static-mem-pools/
+[8]: http://middle-earth.thehobbit.com/rivendell/experience
 
- [9]: http://blog.tojicode.com/2011/07/dirty-full-frame-webgl-performance-hack.html
- [10]: img/scenescaled.jpg
- [11]: http://middle-earth.thehobbit.com/dolguldur/experience
- [12]: img/dolguldur.jpg
- [13]: https://github.com/mrdoob/three.js/blob/master/src/math/Frustum.js
- [14]: http://www.html5rocks.com/en/mobile/touch/
- [15]: http://middle-earth.thehobbit.com
+[9]: http://blog.tojicode.com/2011/07/dirty-full-frame-webgl-performance-hack.html
+[10]: img/scenescaled.jpg
+[11]: http://middle-earth.thehobbit.com/dolguldur/experience
+[12]: img/dolguldur.jpg
+[13]: https://github.com/mrdoob/three.js/blob/master/src/math/Frustum.js
+[14]: http://www.html5rocks.com/en/mobile/touch/
+[15]: http://middle-earth.thehobbit.com
