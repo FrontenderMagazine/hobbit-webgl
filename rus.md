@@ -245,7 +245,7 @@ Pixel и другие ноутбуки с сенсорным вводом име
 определить щипок мы измеряем расстояние между двумя начальными прикосновениями
 и, то как они изменились со временем.
 
-<iframe src="/examples/swipe.html" frameborder="0" width="420" height="320">
+<iframe src="examples/swipe.html" frameborder="0" width="420" height="320">
 </iframe>
 
 *Пример обнаружения свайпа для игры Trollshaw. Попробуйте провести по
